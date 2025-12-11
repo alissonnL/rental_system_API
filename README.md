@@ -1,16 +1,34 @@
-# rental_system
+Rental System – Backend (Dart)
 
-A new Flutter project.
+Backend do sistema de aluguel desenvolvido em Dart, usando Shelf, SQLite e autenticação JWT. Estruturado em camadas para facilitar manutenção e expansão.
 
-## Getting Started
+🚀 Tecnologias
+Dart
+Shelf / Shelf Router
+SQLite
+JWT
 
-This project is a starting point for a Flutter application.
+▶️ Executando
+dart pub get
+dart run bin/server.dart
 
-A few resources to get you started if this is your first Flutter project:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Servidor padrão: http://localhost:8080
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+🔐 Autenticação
+
+Após login, inclua o token nas requisições:
+
+Authorization: Bearer SEU_TOKEN
+
+📌 Endpoints
+Autenticação
+POST /login
+POST /register
+
+Imóveis (protegidos)
+GET /imoveis
+GET /imoveis/:id
+POST /imoveis
+PUT /imoveis/:id
+DELETE /imoveis/:id
