@@ -19,13 +19,6 @@ class ValidadorImovel {
       }
     }
 
-    if(data['id'] != null){
-      final id = int.tryParse(data['id'].toString());
-      if(id == null || id <= 0){
-        erros.add('O campo "id", se fornecido, deve ser um número inteiro positivo.');
-      }
-    }
-
     return erros;
   }
 }

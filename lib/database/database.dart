@@ -16,7 +16,16 @@ class DataBaseHelper{
       ''' CREATE TABLE IF NOT EXISTS imoveis(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         endereco TEXT NOT NULL,
-        valor REAL NOT NULL)'''
+        valor REAL NOT NULL,
+        userId INTEGER NOT NULL)'''
+      );
+
+      db.execute(
+        ''' CREATE TABLE IF NOT EXISTS users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL,
+        password TEXT NOT NULL)'''
       );
   }
 }

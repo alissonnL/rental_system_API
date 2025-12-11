@@ -5,19 +5,28 @@ import 'package:shelf_router/shelf_router.dart';
 
 import '../lib/controllers/imovel_controller.dart';
 import '../lib/services/imovel_service.dart';
+import '../lib/controllers/auth_controller.dart';
+import '../lib/services/auth_service.dart';
+import '../lib/middlewares/auth_middleware.dart';
+
 
 void main() async {
 
   //camadas
-  final service = ImovelService();
-  final controller = ImovelController(service);
+  final imovelService = ImovelService();
+  final imovelController = ImovelController(imovelService);
+
+  final authService = AuthService();
+  final authController = AuthController(authService);
 
   final router = Router();
 
-  router.mount('/', controller.router);
+  router.mount('/', imovelController.router);
+  router.mount('/', authController.router);
 
   final handler = Pipeline()
       .addMiddleware(logRequests())
+      .addMiddleware(authMiddleware())
       .addHandler(router);
 
   final server = await io.serve(handler, InternetAddress.anyIPv4, 8080);

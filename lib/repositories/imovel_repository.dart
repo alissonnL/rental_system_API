@@ -12,6 +12,7 @@ class ImovelRepository {
         id: row['id'] as int,
         endereco: row['endereco'] as String,
         valor: (row['valor'] as num).toDouble(),
+        userId: row['userId'] as int
       );
     }).toList();
   }
@@ -25,29 +26,32 @@ class ImovelRepository {
       id: row['id'] as int,
       endereco: row['endereco'] as String,
       valor: (row['valor'] as num).toDouble(),
+      userId: row['userId'] as int
     );
   }
 
   void create(Imovel imovel) {
-    db.execute('INSERT INTO imoveis (endereco, valor) VALUES (?, ?)', [
+    db.execute('INSERT INTO imoveis (endereco, valor, userId) VALUES (?, ?, ?)', [
       imovel.endereco,
       imovel.valor,
+      imovel.userId
     ]);
   }
 
   bool update(Imovel imovel) {
-    db.execute('UPDATE imoveis SET endereco = ?, valor = ? WHERE id = ?', [
+    db.execute('UPDATE imoveis SET endereco = ?, valor = ? WHERE id = ? AND userId = ?', [
       imovel.endereco,
       imovel.valor,
       imovel.id,
+      imovel.userId
     ]);
 
     final check = db.select('SELECT id FROM imoveis WHERE id = ?', [imovel.id]);
     return check.isNotEmpty;
   }
 
-  bool delete(int id) {
-    db.execute('DELETE FROM imoveis WHERE id = ?', [id]);
+  bool delete(int id, int userId) {
+    db.execute('DELETE FROM imoveis WHERE id = ? AND userId = ?', [id, userId]);
 
     // Verifica se o registro ainda existe
     final check = db.select('SELECT id FROM imoveis WHERE id = ?', [id]);

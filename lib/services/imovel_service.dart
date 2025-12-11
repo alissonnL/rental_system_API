@@ -20,7 +20,7 @@ class ImovelService {
     return repository.update(imovel);
   }
 
-  Future<bool> delete(int id) async {
-    return repository.delete(id);
+  Future<bool> delete(int id, int userId) async {
+    return repository.delete(id, userId);
   }
 }

@@ -3,6 +3,7 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import '../services/imovel_service.dart';
 import '../models/imovel.dart';
+import '../utils/validador_imovel.dart';
 
 class ImovelController {
   final ImovelService service;
@@ -24,7 +25,7 @@ class ImovelController {
     return Response.ok(json, headers: {'Content-Type': 'application/json'});
   }
 
-  Future<Response> getById(Request req, String id) async{
+  Future<Response> getById(Request req, String id) async {
     final imovel = await service.getById(int.parse(id));
     if (imovel == null) {
       return Response.notFound(jsonEncode({'error': 'Imóvel não encontrado'}));
@@ -36,12 +37,31 @@ class ImovelController {
   }
 
   Future<Response> create(Request req) async {
+    //Obtém o userId do contexto
+    final userId = req.context['userId'] as int?;
+
+    if (userId == null) {
+      return Response.forbidden(
+        jsonEncode({'error': 'Usuário não autenticado'}),
+      );
+    }
+
     final body = await req.readAsString();
     final data = jsonDecode(body);
+
+    final validationErrors = ValidadorImovel.validar(data);
+
+    if(validationErrors.isNotEmpty){
+      return Response.badRequest(
+        body: jsonEncode({'errors': validationErrors}),
+        headers: {'Content-Type': 'application/json'}
+      );
+    }
 
     final novo = Imovel(
       endereco: (data['endereco'] ?? '').toString(),
       valor: (data['valor'] ?? 0).toDouble(),
+      userId: userId,
     );
 
     service.create(novo);
@@ -53,18 +73,33 @@ class ImovelController {
   }
 
   Future<Response> update(Request req, String id) async {
+    final userId = req.context['userId'] as int?;
+    if (userId == null){
+      return Response.forbidden(jsonEncode({'error': 'Usuário não autenticado.'}));
+    }
+
     final body = await req.readAsString();
     final data = jsonDecode(body);
 
+    final validationErrors = ValidadorImovel.validar(data);
+
+    if(validationErrors.isNotEmpty){
+      return Response.badRequest(
+        body: jsonEncode({'errors': validationErrors}),
+        headers: {'Content-Type': 'application/json'}
+      );
+    }
+
     final imovelExistente = await service.getById(int.parse(id));
-    if (imovelExistente == null) {
-      return Response.notFound(jsonEncode({'error': 'Imóvel não encontrado'}));
+    if (imovelExistente == null || imovelExistente.userId != userId) {
+      return Response.notFound(jsonEncode({'error': 'Imóvel não encontrado ou acesso negado'}));
     }
 
     final atualizado = Imovel(
       id: imovelExistente.id,
       endereco: (data['endereco'] ?? imovelExistente.endereco).toString(),
       valor: (data['valor'] ?? imovelExistente.valor).toDouble(),
+      userId: userId,
     );
 
     final sucesso = await service.update(int.parse(id), atualizado);
@@ -82,9 +117,15 @@ class ImovelController {
   }
 
   Future<Response> delete(Request req, String id) async {
-    final sucesso = await service.delete(int.parse(id));
+    final userId = req.context['userId'] as int?;
+    if (userId == null)
+      return Response.forbidden(jsonEncode({'error': 'Acesso negado'}));
+
+    final sucesso = await service.delete(int.parse(id), userId);
     if (!sucesso) {
-      return Response.notFound(jsonEncode({'error': 'Imóvel não encontrado'}));
+      return Response.notFound(
+        jsonEncode({'error': 'Imóvel não encontrado ou acesso negado'}),
+      );
     }
 
     return Response.ok(
